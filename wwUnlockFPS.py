@@ -48,9 +48,13 @@ def check_patch(fPath):
     res = cur.execute(
             "SELECT json_extract(value, '$.KeyCustomFrameRate') as CustomFrameRate FROM LocalStorage WHERE key = 'GameQualitySetting'")
     regex = r"(\d+)"
-    result = re.search(regex, str(res.fetchall()), )
-    print(result.group(1))
-    return result.group(1)
+
+    try:
+        result = re.search(regex, str(res.fetchall()), )
+        print(result.group(1))
+        return result.group(1)
+    except AttributeError:
+        pass
 
 
 def execute_patch(fPath):
@@ -72,16 +76,17 @@ def patch_loop(dataDir):
             print(file_path)
             fps = str(check_patch(file_path))
             print(f"db: {fps}")
-
+            patched = ""
             while (patched == "[(60,)]" and i < 20):
                 execute_patch(file_path)
                 patched = check_patch(file_path)
                 i += 1
-        for file in dbfiles:
-            file_path = os.path.join(dataDir, file)
-            execute_patch(file_path)
-            patched = check_patch(file_path)
-            print(patched)
+        #it couldnt find the files before in the first loop, now it does both idk deal with it
+    for file in dbfiles:
+        file_path = os.path.join(dataDir, file)
+        execute_patch(file_path)
+        patched = check_patch(file_path)
+        print(f"db: {file_path} {patched}")
 
 
 
